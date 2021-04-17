@@ -273,7 +273,10 @@ export default {
   sampleReport: {
     path: "/api/v1/patient/{id}/test_sample/{sampleId}/icmr_sample",
   },
-
+  postCovidForm: {
+    path: "/api/v1/patient/{patientId}/post_covid/",
+    method: "POST",
+  },
   // External Results
   externalResultList: {
     path: "/api/v1/external_result/",
@@ -439,5 +442,5 @@ export default {
   retrieveUpload: {
     path: "/api/v1/files/{fileId}/",
     method: "GET",
-  }
+  },
 };

@@ -2,12 +2,14 @@ import React from "react";
 import Typography from "@material-ui/core/Typography";
 import { Box, InputLabel, makeStyles } from "@material-ui/core";
 import { Grid } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import { investigationPrescribed, symptomsList } from "./testData";
+import {
+  investigationPrescribedOptions,
+  investigationPrescribedOptionsMap,
+  symptomsOptions,
+} from "./testData";
 import { CheckBoxWithDetails } from "./TreatmentDetails";
 import {
+  ErrorHelperText,
   MultilineInputField,
   MultiSelectField,
   TextInputField,
@@ -45,11 +47,12 @@ interface AtPresentProps {
   handleValueChange: (value: any, name: string) => void;
   at_present_symptoms: { [key: string]: any }[];
   investigations_prescribed: { [key: string]: any };
-  pr: string;
-  rr: string;
-  bp: string;
-  temperature: string;
-  spo2: string;
+  pr: number;
+  rr: number;
+  bp_systolic: number;
+  bp_diastolic: number;
+  temperature: number;
+  spo2: number;
   appearance_of_pallor: boolean | string;
   appearance_of_cyanosis: boolean | string;
   appearance_of_pedal_edema: boolean | string;
@@ -59,6 +62,7 @@ interface AtPresentProps {
   six_minute_walk_test: boolean | string;
   concurrent_medications: boolean | string;
   probable_diagnosis: boolean | string;
+  errors: { [key: string]: string };
 }
 
 const AtPresent: React.FC<AtPresentProps> = (props) => {
@@ -68,7 +72,8 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
     at_present_symptoms,
     pr,
     rr,
-    bp,
+    bp_systolic,
+    bp_diastolic,
     temperature,
     spo2,
     appearance_of_pallor,
@@ -80,6 +85,7 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
     concurrent_medications,
     probable_diagnosis,
     investigations_prescribed,
+    errors,
   } = props;
 
   const className = useStyle();
@@ -106,10 +112,9 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
       </Typography>
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <InputLabel>Symptoms</InputLabel>
+          <InputLabel required>Symptoms</InputLabel>
           <MultiSelectField
-            options={symptomsList}
-            optionValue="name"
+            options={symptomsOptions}
             label="symptoms"
             name="at_present_symptoms"
             variant="outlined"
@@ -119,11 +124,13 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
               handleMultiSelect(e, at_present_symptoms, "at_present_symptoms")
             }
           />
+          <ErrorHelperText error={errors.at_present_symptoms} />
         </Grid>
         <Grid item xs={12} md={6}></Grid>
 
         <Grid item xs={12}>
           <Typography>On Examination</Typography>
+          <ErrorHelperText error={errors.on_examination_vitals} />
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <InputLabel id="pr-label">PR</InputLabel>
@@ -131,9 +138,10 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
                 variant="outlined"
                 margin="dense"
                 name="pr"
+                type="number"
                 fullWidth
                 errors={""}
-                value={pr}
+                value={pr || null}
                 onChange={(e) =>
                   handleValueChange(e.target.value, "on_examination_vitals.pr")
                 }
@@ -141,17 +149,40 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
             </Grid>
             <Grid item xs={12} md={6}>
               <InputLabel id="bp-label">BP</InputLabel>
-              <TextInputField
-                variant="outlined"
-                margin="dense"
-                name="bp"
-                fullWidth
-                errors={""}
-                value={bp}
-                onChange={(e) =>
-                  handleValueChange(e.target.value, "on_examination_vitals.bp")
-                }
-              />
+              <Box display="flex">
+                <TextInputField
+                  variant="outlined"
+                  margin="dense"
+                  name="bp_systolic"
+                  type="number"
+                  fullWidth
+                  errors={""}
+                  value={bp_systolic || null}
+                  placeholder={"BP Systolic"}
+                  onChange={(e) =>
+                    handleValueChange(
+                      e.target.value,
+                      "on_examination_vitals.bp_systolic"
+                    )
+                  }
+                />
+                <TextInputField
+                  variant="outlined"
+                  margin="dense"
+                  name="bp_diastolic"
+                  type="number"
+                  fullWidth
+                  errors={""}
+                  placeholder={"BP Diastolic"}
+                  value={bp_diastolic || null}
+                  onChange={(e) =>
+                    handleValueChange(
+                      e.target.value,
+                      "on_examination_vitals.bp_diastolic"
+                    )
+                  }
+                />
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
               <InputLabel id="rr-label">RR</InputLabel>
@@ -159,9 +190,10 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
                 variant="outlined"
                 margin="dense"
                 name="rr"
+                type="number"
                 fullWidth
                 errors={""}
-                value={rr}
+                value={rr || null}
                 onChange={(e) =>
                   handleValueChange(e.target.value, "on_examination_vitals.rr")
                 }
@@ -173,9 +205,10 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
                 variant="outlined"
                 margin="dense"
                 name="temperature"
+                type="number"
                 fullWidth
                 errors={""}
-                value={temperature}
+                value={temperature || null}
                 onChange={(e) =>
                   handleValueChange(
                     e.target.value,
@@ -190,9 +223,10 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
                 variant="outlined"
                 margin="dense"
                 name="spo2"
+                type="number"
                 fullWidth
                 errors={""}
-                value={spo2}
+                value={spo2 || null}
                 onChange={(e) =>
                   handleValueChange(
                     e.target.value,
@@ -526,7 +560,7 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
             Single Breath Count
           </InputLabel>
           <MultilineInputField
-            errors={""}
+            errors={errors.single_breath_count}
             variant="outlined"
             margin="dense"
             name="single_breath_count"
@@ -541,7 +575,7 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
             Concurrenrent Medications
           </InputLabel>
           <MultilineInputField
-            errors={""}
+            errors={errors.concurrent_medications}
             variant="outlined"
             margin="dense"
             name="concurrent_medications"
@@ -552,9 +586,11 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
           />
         </Grid>
         <Grid item xs={12}>
-          <InputLabel id="6min_walk_text-label">6 minute walk test</InputLabel>
+          <InputLabel id="six_minute_walk_test-label">
+            6 minute walk test
+          </InputLabel>
           <MultilineInputField
-            errors={""}
+            errors={errors.six_minute_walk_test}
             variant="outlined"
             margin="dense"
             name="six_minute_walk_test"
@@ -569,8 +605,7 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
             Investigations Prescribed
           </InputLabel>
           <MultiSelectField
-            options={investigationPrescribed}
-            optionValue={"name"}
+            options={investigationPrescribedOptions}
             variant="outlined"
             margin="dense"
             value={Object.keys(investigations_prescribed)}
@@ -585,7 +620,7 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
           {Object.keys(investigations_prescribed).map((item: string, index) => {
             return (
               <MultilineInputField
-                label={`${item} (optional)`}
+                label={`${investigationPrescribedOptionsMap[item].text} Details`}
                 key={index}
                 rows={3}
                 margin="dense"
@@ -603,11 +638,12 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
           })}
         </Grid>
         <Grid item xs={12}>
-          <InputLabel id="probable_diagnosis-label">
+          <InputLabel id="probable_diagnosis-label" required>
             Probable Diagnosis
           </InputLabel>
           <MultilineInputField
-            errors={""}
+            required
+            errors={errors.probable_diagnosis}
             variant="outlined"
             margin="dense"
             name="probable_diagnosis"

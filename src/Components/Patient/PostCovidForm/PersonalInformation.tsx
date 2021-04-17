@@ -1,12 +1,8 @@
 import React from "react";
-import { Badge, Box, Grid, makeStyles } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
+import { makeStyles } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
+import { DupPatientModel } from "../../Facility/models";
+import { Gender } from "./types";
 
 const useStyle = makeStyles((theme) => ({
   heading: {
@@ -24,16 +20,25 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-const PersonalInformation = () => {
+export interface PatientInfo {
+  patient_id: string;
+  patient_external_id: string;
+  name: string;
+  age: number;
+  address: string;
+  phone_number: string;
+  gender: number;
+  occupation: string;
+}
+interface PersonalInformationProps {
+  patientInfo: PatientInfo;
+}
+
+const PersonalInformation: React.FC<PersonalInformationProps> = ({
+  patientInfo,
+}) => {
   const className = useStyle();
-  const { name, age, address, phone_number, gender, occupation } = {
-    name: "John Doe",
-    age: 27,
-    address: " Ramesh Ghar Bldg, 134 Th Katharia Rd, Mahim,Mumbai",
-    phone_number: "1234567890",
-    gender: "Male",
-    occupation: "Job",
-  };
+  const { name, age, address, phone_number, gender, occupation } = patientInfo;
   return (
     <>
       <Typography variant="h4" color="primary" className={className.heading}>
@@ -55,7 +60,7 @@ const PersonalInformation = () => {
                 Gender
               </div>
               <div className="mt-1 text-sm leading-5 text-gray-900">
-                {gender}
+                {Gender[gender]}
               </div>
             </div>
             <div className="sm:col-span-1">
@@ -70,7 +75,9 @@ const PersonalInformation = () => {
               <div className="text-sm leading-5 font-medium text-gray-500">
                 Occupation
               </div>
-              <div className="mt-1 text-sm leading-5 text-gray-900">Job</div>
+              <div className="mt-1 text-sm leading-5 text-gray-900">
+                {occupation || "-"}
+              </div>
             </div>
           </div>
         </div>

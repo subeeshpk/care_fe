@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Grid, InputLabel, makeStyles } from "@material-ui/core";
+import { Grid, InputLabel, makeStyles } from "@material-ui/core";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -8,22 +8,20 @@ import FormLabel from "@material-ui/core/FormLabel";
 import Typography from "@material-ui/core/Typography";
 import DateFnsUtils from "@date-io/date-fns";
 
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from "@material-ui/pickers";
-import { comorbitiesList, facilitiesList } from "./testData";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { comorbitiesOptions, comorbitiesOptionsMap } from "./testData";
 import {
   DateInputField,
+  ErrorHelperText,
   MultilineInputField,
   MultiSelectField,
-  SelectField,
   TextInputField,
 } from "../../Common/HelperInputFields";
+import { FacilitySelect } from "../../Common/FacilitySelect";
 
 const useStyle = makeStyles((theme) => ({
   heading: {
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(4),
   },
   radioContainer: {
     marginTop: theme.spacing(4),
@@ -44,11 +42,13 @@ interface AboutCovidProps {
   post_covid_time: number;
   date_of_test_positive: string;
   date_of_test_negative: string;
+  date_of_onset_symptoms: string;
   testing_centre: string;
   pre_covid_comorbidities: { [key: string]: any };
   post_covid_comorbidities: { [key: string]: any };
-
-  treatment_facility: number;
+  treatment_facility: any[];
+  treatment_duration: number;
+  errors: { [key: string]: string };
 }
 
 const AboutCovid: React.FC<AboutCovidProps> = (props) => {
@@ -63,8 +63,10 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
     testing_centre,
     pre_covid_comorbidities,
     post_covid_comorbidities,
-
+    date_of_onset_symptoms,
     treatment_facility,
+    errors,
+    treatment_duration,
   } = props;
 
   const handleMultiSelect = (
@@ -89,12 +91,27 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
       </Typography>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <InputLabel id="date_of_onset_symptoms">
+              Date of onset symptoms
+            </InputLabel>
+            <DateInputField
+              errors={errors.date_of_onset_symptoms}
+              required
+              defaultValue={null}
+              inputVariant="outlined"
+              margin="dense"
+              onChange={(e) => handleDateChange(e, "date_of_onset_symptoms")}
+              value={date_of_onset_symptoms}
+              name="date_of_onset_symptoms"
+              emptyLabel={"dd/mm/yyyy"}
+              fullWidth
+              maxDate={new Date()}
+            />
+          </Grid>
           <Grid item xs={12}>
             {/* POST COVID DURATION */}
-            <FormControl
-              component="fieldset"
-              className={className.radioContainer}
-            >
+            <FormControl component="fieldset" required>
               <FormLabel component="legend">Post Covid</FormLabel>
               <RadioGroup
                 aria-label="post_covid_time"
@@ -122,6 +139,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
                   className={className.radioLabel}
                 />
               </RadioGroup>
+              <ErrorHelperText error={errors.post_covid_time} />
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -129,7 +147,8 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               Date of test positive
             </InputLabel>
             <DateInputField
-              errors={""}
+              errors={errors.date_of_test_positive}
+              required
               defaultValue={null}
               inputVariant="outlined"
               margin="dense"
@@ -138,6 +157,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               name="date_of_test_positive"
               emptyLabel={"dd/mm/yyyy"}
               fullWidth
+              maxDate={new Date()}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -145,7 +165,8 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               Date of test negative
             </InputLabel>
             <DateInputField
-              errors={""}
+              errors={errors.date_of_test_negative}
+              required
               defaultValue={null}
               inputVariant="outlined"
               margin="dense"
@@ -155,36 +176,38 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               fullWidth
               name="date_of_test_negative"
               size={"medium"}
+              minDate={date_of_test_positive}
+              maxDate={new Date()}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InputLabel id="pre_covid_comrbities-label">
-              Testing Center
-            </InputLabel>
+            <InputLabel id="testing_centre-label">Testing Center</InputLabel>
             <TextInputField
               variant="outlined"
               margin="dense"
               name="testing_centre"
               fullWidth
               value={testing_centre}
-              errors={""}
+              errors={errors.testing_centre}
               onChange={(e) => handleChange(e)}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InputLabel id="srf_id-label">SRF ID</InputLabel>
-            <TextInputField
-              variant="outlined"
-              margin="dense"
-              name="srf_id"
-              fullWidth
-              errors={""}
-              value="SOME_ID"
-              disabled
+            <InputLabel id="treatment_facility-label" required>
+              Treatment Facility
+            </InputLabel>
+            <FacilitySelect
+              errors={errors.treatment_facility}
+              name={"treatment_facility"}
+              selected={treatment_facility || null}
+              margin={"dense"}
+              multiple
+              searchAll
+              setSelected={(e) => handleValueChange(e, "treatment_facility")}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <InputLabel id="post_covid_comrbities-label">
+            <InputLabel id="pre_covid_comrbities-label">
               Pre-covid comorbities
             </InputLabel>
             <MultiSelectField
@@ -193,8 +216,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               margin="dense"
               color="primary"
               label="pre_covid_comrbities"
-              options={comorbitiesList}
-              optionValue={"name"}
+              options={comorbitiesOptions}
               value={Object.keys(pre_covid_comorbidities)}
               onChange={(e) =>
                 handleMultiSelect(
@@ -207,7 +229,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
             {Object.keys(pre_covid_comorbidities).map((item, index) => {
               return (
                 <MultilineInputField
-                  label={`${item} (optional)`}
+                  label={`${comorbitiesOptionsMap[item].text} Details`}
                   key={index}
                   rows={3}
                   margin="dense"
@@ -233,8 +255,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               margin="dense"
               color="primary"
               label="post_covid_comrbities"
-              options={comorbitiesList}
-              optionValue={"name"}
+              options={comorbitiesOptions}
               value={Object.keys(post_covid_comorbidities)}
               onChange={(e) =>
                 handleMultiSelect(
@@ -247,7 +268,7 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
             {Object.keys(post_covid_comorbidities).map((item, index) => {
               return (
                 <MultilineInputField
-                  label={`${item} (optional)`}
+                  label={`${comorbitiesOptionsMap[item].text} Details`}
                   key={index}
                   rows={3}
                   margin="dense"
@@ -264,18 +285,20 @@ const AboutCovid: React.FC<AboutCovidProps> = (props) => {
               );
             })}
           </Grid>
+
           <Grid item xs={12} sm={6}>
-            <InputLabel id="treatment_facility-label">
-              Treatment Facility
+            <InputLabel id="treatment_duration-label" required>
+              Treatment Duration
             </InputLabel>
-            <SelectField
-              name="treatment_facility"
+            <TextInputField
+              required
+              errors={errors.treatment_duration}
+              name="treatment_duration"
               variant="outlined"
               color="primary"
               margin="dense"
-              options={facilitiesList}
-              optionValue={"name"}
-              value={treatment_facility}
+              type="number"
+              value={treatment_duration || null}
               onChange={(e) => handleChange(e)}
             />
           </Grid>

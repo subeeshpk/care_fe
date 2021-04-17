@@ -157,6 +157,9 @@ export const transferPatient = (params: object, pathParam: object) => {
 export const getStates = () => {
   return fireRequest("statesList", []);
 };
+export const createPostCovidForm = (params: object, pathParam: object) => {
+  return fireRequest("postCovidForm", [], params, pathParam);
+};
 
 // District/State/Local body/ward
 export const getDistrictByState = (pathParam: object) => {
@@ -302,7 +305,7 @@ export const externalResultList = (params: object, altKey: string) => {
 
 export const externalResult = (pathParam: object) => {
   return fireRequest("externalResult", [], {}, pathParam);
-}
+};
 export const externalResultUploadCsv = (params: object) => {
   return fireRequest("externalResultUploadCsv", [], params);
 };
