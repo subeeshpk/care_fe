@@ -20,3 +20,12 @@ export enum AntiCoagulantsAdmissonMode {
   Iv = "Iv",
   Oral = "Oral"
 }
+
+export interface DrugDetail {
+  duration: number;
+  name: string;
+}
+
+export interface AntiCoagulants extends DrugDetail {
+  mode_of_transmission: number;
+}
