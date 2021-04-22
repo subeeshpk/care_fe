@@ -67,8 +67,8 @@ export const initForm = {
   six_minute_walk_test: "",
   concurrent_medications: "",
   probable_diagnosis: "",
-  investigations_prescribed: {}
 }
+
 export const initError = Object.assign(
   {},
   ...Object.keys(initForm).map((k) => ({ [k]: "" }))

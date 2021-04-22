@@ -16,6 +16,9 @@ const useStyle = makeStyles((theme) => ({
   componentWrapper: {
     padding: theme.spacing(4, 0),
   },
+  mb: {
+    marginBottom: "1.5rem",
+  },
 }));
 
 const postCovidFormReducer = (state = initialState, action: any) => {
@@ -37,9 +40,13 @@ const postCovidFormReducer = (state = initialState, action: any) => {
   }
 };
 
-const PostCovidForm = () => {
-  const className = useStyle();
+interface PostCovidFormProps {
+  facilityId: string;
+}
 
+const PostCovidForm: React.FC<PostCovidFormProps> = ({ facilityId }) => {
+  const className = useStyle();
+  console.log({ facilityId });
   const dispatchAction: any = useDispatch();
   const [state, dispatch] = useReducer(postCovidFormReducer, initialState);
   const [isFormVisible, setIsFormVisible] = React.useState(false);
@@ -192,7 +199,11 @@ const PostCovidForm = () => {
   return (
     <>
       {!isFormVisible && (
-        <GetPatient setUser={setUser} setIsFormVisible={setIsFormVisible} />
+        <GetPatient
+          facilityId={facilityId}
+          setUser={setUser}
+          setIsFormVisible={setIsFormVisible}
+        />
       )}
       {isFormVisible && user && (
         <Container maxWidth="md">
@@ -212,9 +223,9 @@ const PostCovidForm = () => {
             </h2>
           </div>
           <form onSubmit={handleSubmit}>
-            <Button onClick={() => validateForm(state, dispatch)}>
+            {/* <Button onClick={() => validateForm(state, dispatch)}>
               Validate
-            </Button>
+            </Button> */}
             <Box className={className.componentWrapper}>
               <PersonalInformation patientInfo={(user || {}) as any} />
             </Box>
@@ -303,16 +314,18 @@ const PostCovidForm = () => {
                 six_minute_walk_test={state.form.six_minute_walk_test}
                 concurrent_medications={state.form.concurrent_medications}
                 probable_diagnosis={state.form.probable_diagnosis}
-                investigations_prescribed={state.form.investigations_prescribed}
                 errors={state.errors}
               />
             </Box>
 
-            <Button color="primary" variant="contained" type="submit">
+            <Button
+              color="primary"
+              variant="contained"
+              type="submit"
+              className={className.mb}
+            >
               Submit
             </Button>
-            <br />
-            <br />
           </form>
         </Container>
       )}

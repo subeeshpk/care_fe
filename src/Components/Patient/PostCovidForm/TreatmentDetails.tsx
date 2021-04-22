@@ -1,11 +1,9 @@
-import React, { Children } from "react";
+import React from "react";
 import Typography from "@material-ui/core/Typography";
 import {
   Box,
-  Button,
   FormControl,
   FormLabel,
-  IconButton,
   InputLabel,
   makeStyles,
 } from "@material-ui/core";
@@ -15,16 +13,15 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import {
-  CheckboxField,
   ErrorHelperText,
   MultilineInputField,
   MultiSelectField,
   SelectField,
   TextInputField,
 } from "../../Common/HelperInputFields";
-import { CovidCategory, OxygenRequirement } from "./types";
-import { DrugDetails, Anticoagulants } from "./DrugDetails";
-import { antiViralDragsOptions, oxygenModeOptions } from "./testData";
+import { CovidCategory } from "./types";
+import { Anticoagulants, DrugDetails } from "./DrugDetails";
+import { antiViralDragsOptions, oxygenModeOptions } from "./options";
 
 const useStyle = makeStyles((theme) => ({
   heading: {
@@ -42,12 +39,20 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-export const CheckBoxWithDetails: React.FC<{
+interface CheckBoxWithDetailsProps {
   label: string;
   checked: boolean;
   name: string;
   onChange: (e: any, checked: boolean) => void;
-}> = ({ label, children, checked, onChange, name }) => {
+}
+
+export const CheckBoxWithDetails: React.FC<CheckBoxWithDetailsProps> = ({
+  label,
+  children,
+  checked,
+  onChange,
+  name,
+}) => {
   return (
     <Box display="flex" flexDirection="column" margin="0.5rem 0">
       <FormControlLabel
@@ -152,7 +157,6 @@ const Treatment: React.FC<TreatmentProps> = (props) => {
       <Typography variant="h4" color="primary" className={className.heading}>
         Covid Treatment Details
       </Typography>
-      {/* CATRGORY */}
       <Grid item xs={12}>
         <FormControl component="fieldset" className={className.mb1}>
           <FormLabel component="legend" required>
@@ -312,7 +316,6 @@ const Treatment: React.FC<TreatmentProps> = (props) => {
           </Grid>
         </Grid>
         <Grid item xs={12}>
-          {/* <CheckBoxWithDetails label={"ICU Addmission"} /> */}
           <FormControlLabel
             control={
               <Checkbox

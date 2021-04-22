@@ -9,7 +9,7 @@ import Typography from "@material-ui/core/Typography";
 import DateFnsUtils from "@date-io/date-fns";
 
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { comorbitiesOptions, comorbitiesOptionsMap } from "./testData";
+import { comorbitiesOptions, comorbitiesOptionsMap } from "./options";
 import {
   DateInputField,
   ErrorHelperText,

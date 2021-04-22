@@ -2,11 +2,7 @@ import React from "react";
 import Typography from "@material-ui/core/Typography";
 import { Box, InputLabel, makeStyles } from "@material-ui/core";
 import { Grid } from "@material-ui/core";
-import {
-  investigationPrescribedOptions,
-  investigationPrescribedOptionsMap,
-  symptomsOptions,
-} from "./testData";
+import { symptomsOptions } from "./options";
 import { CheckBoxWithDetails } from "./TreatmentDetails";
 import {
   ErrorHelperText,
@@ -46,7 +42,6 @@ interface AtPresentProps {
   handleChange: <T = any>(e: T) => void;
   handleValueChange: (value: any, name: string) => void;
   at_present_symptoms: { [key: string]: any }[];
-  investigations_prescribed: { [key: string]: any };
   pr: number;
   rr: number;
   bp_systolic: number;
@@ -84,7 +79,6 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
     six_minute_walk_test,
     concurrent_medications,
     probable_diagnosis,
-    investigations_prescribed,
     errors,
   } = props;
 
@@ -599,43 +593,6 @@ const AtPresent: React.FC<AtPresentProps> = (props) => {
             value={six_minute_walk_test}
             onChange={handleChange}
           />
-        </Grid>
-        <Grid item xs={6}>
-          <InputLabel id="investigations_prescribed">
-            Investigations Prescribed
-          </InputLabel>
-          <MultiSelectField
-            options={investigationPrescribedOptions}
-            variant="outlined"
-            margin="dense"
-            value={Object.keys(investigations_prescribed)}
-            onChange={(e) =>
-              handleMultiSelect(
-                e,
-                investigations_prescribed,
-                "investigations_prescribed"
-              )
-            }
-          />
-          {Object.keys(investigations_prescribed).map((item: string, index) => {
-            return (
-              <MultilineInputField
-                label={`${investigationPrescribedOptionsMap[item].text} Details`}
-                key={index}
-                rows={3}
-                margin="dense"
-                variant="outlined"
-                value={investigations_prescribed[item as string]}
-                errors=""
-                onChange={(e) =>
-                  handleValueChange(
-                    e.target.value,
-                    `investigations_prescribed.${item}`
-                  )
-                }
-              />
-            );
-          })}
         </Grid>
         <Grid item xs={12}>
           <InputLabel id="probable_diagnosis-label" required>

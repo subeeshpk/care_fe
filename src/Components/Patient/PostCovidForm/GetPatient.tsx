@@ -44,7 +44,6 @@ import { navigate } from "raviger";
 import { Gender } from "./types";
 
 const initForm: any = {
-  facility: "",
   date_of_birth: null,
 };
 
@@ -81,9 +80,9 @@ const TransferModal = ({
   open,
   setOpen,
   patient,
-  facilityOptions,
   setUser,
   setIsFormVisible,
+  facilityId,
 }: any) => {
   const dispatchAction: any = useDispatch();
   const [state, dispatch] = useReducer(transferFormReducer, initialState);
@@ -93,12 +92,6 @@ const TransferModal = ({
     let invalidForm = false;
     Object.keys(state.form).forEach((field, i) => {
       switch (field) {
-        case "facility":
-          if (!state.form[field]) {
-            errors[field] = "Please select the facility";
-            invalidForm = true;
-          }
-          return;
         case "date_of_birth":
           if (!state.form[field]) {
             errors[field] = "Please enter date in DD/MM/YYYY format";
@@ -121,7 +114,7 @@ const TransferModal = ({
       setIsLoading(true);
       const data = {
         date_of_birth: moment(state.form.date_of_birth).format("YYYY-MM-DD"),
-        facility: state.form.facility,
+        facility: facilityId,
       };
       console.log("SENDING DATA", data);
       const res = await dispatchAction(
@@ -163,12 +156,6 @@ const TransferModal = ({
   const handleClose = () => {
     setOpen(false);
   };
-  const handleChange = (e: any) => {
-    console.log(e);
-    const form = { ...state.form };
-    form[e.target.name] = e.target.value;
-    dispatch({ type: "set_form", form });
-  };
 
   const handleDateChange = (date: any, field: string) => {
     if (moment(date).isValid()) {
@@ -209,24 +196,6 @@ const TransferModal = ({
               disableFuture={true}
             />
           </div>
-
-          <div>
-            <InputLabel>Facility*</InputLabel>
-            <SelectField
-              fullWidth={true}
-              value={state.form.facility}
-              onChange={handleChange}
-              errors={state.errors.facility}
-              margin="dense"
-              variant="outlined"
-              name="facility"
-              optionValue="name"
-              options={[
-                { name: "select facility", id: "" },
-                ...facilityOptions,
-              ]}
-            />
-          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -248,34 +217,21 @@ const TransferModal = ({
   );
 };
 
-const PatientTable: React.FC<{
+interface PatientTableProps {
   patientList: any;
   setUser: any;
   setIsFormVisible: any;
   facilityPatients?: boolean;
-}> = ({ patientList, setUser, setIsFormVisible, facilityPatients }) => {
-  const dispatchAction: any = useDispatch();
-  const [facilityOptions, setFacilityOptions] = useState([]);
-  const fetchData = useCallback(
-    async (status: statusType) => {
-      const params = {};
-      const res = await dispatchAction(getFacilities(params));
-      if (!status.aborted) {
-        if (res && res.data) {
-          setFacilityOptions(res.data.results);
-        }
-      }
-    },
-    [dispatchAction]
-  );
+  facilityId: string;
+}
 
-  useAbortableEffect(
-    (status: statusType) => {
-      fetchData(status);
-    },
-    [fetchData]
-  );
-  console.log({ facilityOptions });
+const PatientTable: React.FC<PatientTableProps> = ({
+  facilityId,
+  patientList,
+  setUser,
+  setIsFormVisible,
+  facilityPatients,
+}) => {
   const PatientRow = ({ patient }: { patient: any }) => {
     const [open, setOpen] = React.useState(false);
     const handleFacilityPatientSubmit = () => {
@@ -297,19 +253,18 @@ const PatientTable: React.FC<{
           patient={patient}
           open={open}
           setOpen={setOpen}
-          facilityOptions={facilityOptions}
           setUser={setUser}
+          facilityId={facilityId}
           setIsFormVisible={setIsFormVisible}
         />
         <TableRow key={facilityPatients ? patient.id : patient.patient_id}>
-          <TableCell component="th" scope="row">
-            {facilityPatients ? patient.id : patient.patient_id}
+          <TableCell align="left" width="50%">
+            {patient.name}
           </TableCell>
-          <TableCell align="right">{patient.name}</TableCell>
-          <TableCell align="right">
+          <TableCell align="left">
             {Number(patient.gender) ? Gender[patient.gender] : patient.gender}
           </TableCell>
-          <TableCell align="right">
+          <TableCell align="center">
             <Button
               onClick={() =>
                 facilityPatients ? handleFacilityPatientSubmit() : setOpen(true)
@@ -331,10 +286,11 @@ const PatientTable: React.FC<{
       <Table aria-label="simple table" size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Patient ID</TableCell>
-            <TableCell align="right">Name</TableCell>
-            <TableCell align="right">Gender</TableCell>
-            <TableCell align="right">Action</TableCell>
+            <TableCell align="left" width="50%">
+              Name
+            </TableCell>
+            <TableCell align="left">Gender</TableCell>
+            <TableCell align="center">Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -355,7 +311,17 @@ const PatientTable: React.FC<{
   );
 };
 
-const GetPatient = ({ setUser, setIsFormVisible }: any) => {
+interface GetPatientProps {
+  setUser: Function;
+  setIsFormVisible: Function;
+  facilityId: string;
+}
+
+const GetPatient: React.FC<GetPatientProps> = ({
+  setUser,
+  setIsFormVisible,
+  facilityId,
+}) => {
   const [statusDialog, setStatusDialog] = useState<{
     show?: boolean;
     facilityPatientList: Array<PatientModel>;
@@ -364,9 +330,12 @@ const GetPatient = ({ setUser, setIsFormVisible }: any) => {
   }>({ patientList: [], loading: false, facilityPatientList: [] });
   const dispatchAction: any = useDispatch();
 
+  const [isCreatePatientVisible, setIsCreatePatientVisible] = useState(false);
+
   const fetchPatient = useCallback(
     debounce(async (phoneNo: string) => {
       if (phoneNo && parsePhoneNumberFromString(phoneNo)?.isPossible()) {
+        setIsCreatePatientVisible(true);
         const query = {
           phone_number: parsePhoneNumberFromString(phoneNo)?.format("E.164"),
         };
@@ -408,6 +377,8 @@ const GetPatient = ({ setUser, setIsFormVisible }: any) => {
             }));
           }
         }
+      } else {
+        setIsCreatePatientVisible(false);
       }
     }, 300),
     []
@@ -418,13 +389,31 @@ const GetPatient = ({ setUser, setIsFormVisible }: any) => {
     {}
   ) as any;
   const patientListArray = statusDialog.patientList.filter(
-    (p: any) => !!facilityPatientMap[p.patient_external_id as any]
+    (p: any) => !facilityPatientMap[p.patient_external_id as any]
   );
+  console.log({
+    patientListArray,
+    facilityPatientList: statusDialog.facilityPatientList,
+  });
 
   return (
     <Box padding="2rem 0" bgcolor="#F3F4F6">
       <Container maxWidth="md">
-        <Typography variant="h5" component="h1">
+        <div className={`flex pt-4 mb-4`}>
+          <button
+            onClick={() => {
+              window.history.go(-1);
+            }}
+          >
+            <i className="fas fa-chevron-left text-2xl rounded-md p-2 hover:bg-gray-200 mr-1">
+              {" "}
+            </i>
+          </button>
+          <h2 className="font-semibold text-2xl leading-tight m-2 ml-0">
+            Post Covid Form
+          </h2>
+        </div>
+        <Typography variant="h6" component="h1">
           Enter Patient Details
         </Typography>
         <br />
@@ -437,36 +426,48 @@ const GetPatient = ({ setUser, setIsFormVisible }: any) => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
-            <Typography>OR</Typography>
-          </Grid>
-          <Grid item xs={12} md={5}>
-            <Button onClick={() => navigate("/facility")}>
-              Create Patient
-            </Button>
-          </Grid>
         </Grid>
         {statusDialog.loading && <CircularProgress />}
         {statusDialog.show && !statusDialog.loading && (
           <>
-            <Typography>Other Facilities Patients</Typography>
-            <br />
+            <Typography className="mb-2 mt-4">
+              Patients from other facilities
+            </Typography>
+
             <PatientTable
               patientList={patientListArray}
               setUser={setUser}
               setIsFormVisible={setIsFormVisible}
+              facilityId={facilityId}
             />
-            <br />
-            <br />
-            <br />
-            <Typography>Facilities Patients</Typography>
-            <br />
+
+            <Typography className="mb-2 mt-4">
+              Patients from facility
+            </Typography>
+
             <PatientTable
               patientList={statusDialog.facilityPatientList}
               setUser={setUser}
               setIsFormVisible={setIsFormVisible}
               facilityPatients
+              facilityId={facilityId}
             />
+          </>
+        )}
+        {isCreatePatientVisible && !statusDialog.loading && (
+          <>
+            <Typography className="mt-4" color="error">
+              Note : If patient not found in the list, you can create new
+              patient
+            </Typography>
+            <Button
+              color="primary"
+              className="my-4"
+              variant="contained"
+              onClick={() => navigate("/facility")}
+            >
+              Create Patient
+            </Button>
           </>
         )}
       </Container>

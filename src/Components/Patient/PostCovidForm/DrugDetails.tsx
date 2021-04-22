@@ -4,16 +4,13 @@ import { Grid, makeStyles } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import AddIcon from "@material-ui/icons/Add";
 import { SelectField, TextInputField } from "../../Common/HelperInputFields";
-import { AntiCoagulantsAdmissonMode } from "./types";
-import { antiCoagulantsTransmissionOptions } from "./testData";
+import { AntiCoagulants, DrugDetail } from "./types";
+import { antiCoagulantsTransmissionOptions } from "./options";
 
-interface DrugDetails {
-  duration: number;
-  name: string;
-}
-
-interface AntiCoagulants extends DrugDetails {
-  mode_of_transmission: number;
+interface DrugsDetailsProps {
+  values: DrugDetail[];
+  handleValueChange: (val: any, path: string) => void;
+  id: string;
 }
 
 const useStyle = makeStyles((theme) => ({
@@ -22,11 +19,11 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-export const DrugDetails: React.FC<{
-  values: DrugDetails[];
-  handleValueChange: (val: any, path: string) => void;
-  id: string;
-}> = ({ handleValueChange, id, values }) => {
+export const DrugDetails: React.FC<DrugsDetailsProps> = ({
+  handleValueChange,
+  id,
+  values,
+}) => {
   const className = useStyle();
   return (
     <Box padding="0.5rem">
@@ -94,11 +91,17 @@ export const DrugDetails: React.FC<{
   );
 };
 
-export const Anticoagulants: React.FC<{
+interface AnticoagulantsProps {
   values: AntiCoagulants[];
   handleValueChange: (val: any, path: string) => void;
   id: string;
-}> = ({ handleValueChange, id, values }) => {
+}
+
+export const Anticoagulants: React.FC<AnticoagulantsProps> = ({
+  handleValueChange,
+  id,
+  values,
+}) => {
   const className = useStyle();
   return (
     <Box padding="0.5rem">
