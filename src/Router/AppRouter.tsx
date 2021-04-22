@@ -231,7 +231,9 @@ const routes = {
   "/external_results": () => <ResultList />,
   "/external_results/upload": () => <ExternalResultUpload />,
   "/external_results/:id": ({ id }: any) => <ResultItem id={id} />,
-  "/post_covid_form": () => <PostCovidForm />,
+  "/facility/:facilityId/post_covid": ({ facilityId }: any) => (
+    <PostCovidForm facilityId={facilityId} />
+  ),
 };
 
 let menus = [
