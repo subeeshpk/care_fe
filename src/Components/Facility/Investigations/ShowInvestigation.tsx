@@ -15,6 +15,7 @@ export default function ShowInvestigation(props: any) {
 
   const fetchData = useCallback(
     async (status: statusType) => {
+      console.log("fetchdata function calllleddddd");
       setIsLoading(true);
       const res = await dispatchAction(
         getInvestigation({ session: sessionId }, consultationId)
@@ -30,6 +31,7 @@ export default function ShowInvestigation(props: any) {
   );
   useAbortableEffect(
     (status: statusType) => {
+      console.log("abortable function calllleddddd");
       fetchData(status);
     },
     [fetchData]

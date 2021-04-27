@@ -9,6 +9,7 @@ import {
   Theme,
   InputLabel,
   Box,
+  Checkbox
 } from "@material-ui/core";
 import { createStyles, makeStyles, withStyles } from "@material-ui/styles";
 import React from "react";
@@ -37,11 +38,21 @@ const StyledTableRow = withStyles((theme: Theme) =>
 
 const TestRow = ({ data }: any) => {
   const className = useStyle();
+  const [checkBoxChecked, changeCheckBox] = useState(false)
+  const changeCheckBoxValue = () => {
+    changeCheckBox(current => !current)
+  }
 
   const tableClass = "px-4 h-12 text-sm border-l border-r border-gray-400";
 
   return (
     <StyledTableRow>
+      <TableCell className={tableClass}>
+        <Checkbox
+          defaultChecked={checkBoxChecked}
+          onClick={() => changeCheckBoxValue()}
+        />
+      </TableCell>
       <TableCell className={tableClass}>
         {data.investigation_object.name}
       </TableCell>
